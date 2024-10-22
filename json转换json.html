@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线TXT转JSON-wuzhij</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        .centered-header {
+            text-align: center; 
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-size: 10px;
+            margin-bottom: 10px;
+        }
+        textarea::placeholder {
+            color: #666666; 
+            font-size: 14px; 
+        }
+   .button-container {
+            display: flex;          
+            justify-content: center; /* 水平居中 */
+        }
+    button {
+      padding: 10px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin: 5px; 
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+        #result {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        .input-container {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .input-container label {
+            margin-right: 10px;
+        }
+        .input-container input[type="text"] {
+            width: 200px; 
+            height: 20px;
+            border: 1px solid #666666;
+            border-radius: 4px;
+            outline: none;
+            padding: 5px;
+            background-color: transparent;
+            color: black;
+        }
+        .input-container input[type="text"]:focus {
+            border: 1px solid #666666;
+        }
+.info {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    border: 1px solid #666666; 
+    padding: 10px; 
+}
+    h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    #copyright {
+      margin-top: 20px;
+      color: #666;
+      text-align: center; 
+      font-size: 12px;
+    }
+     #copyright a {
+            text-decoration: none; /* 去掉下划线 */
+            color: inherit; /* 继承父元素的颜色 */
+        }
+    </style>
+</head>
+<body>
+    <h1 class="centered-header">TXT转JSON</h1>
+    <textarea id="inputText" placeholder="请输入或粘贴文本..."></textarea>
+    <br>
+    <div class="input-container">
+        <label for="categoryName">分类名称:</label>
+        <input type="text" id="categoryName" placeholder="默认电视频道, 自定义如: 北京频道">
+    </div>
+    <br>
+    <div class="button-container">
+        <button onclick="convertToJson()">转换频道</button>
+        <button onclick="clearScreen()">清除屏幕</button>
+        <button onclick="copyContent()">复制结果</button>
+        <button onclick="downloadJson()">下载json</button>
+    </div>
+    <br>
+        <label>转换结果:</label>  
+    <div id="result"></div>
+    <br><br>
+<div class="info">
+    <h3>TXT文本样式</h3>
+    <p>TXT电视源转换成json格式, 分类名称可以自定义, 支持单线路和 多线路[用#号分开线路], </p>
+  <p>  注意: <span style="color: red;">复制结果到原来的json中时, 只复制 <span style="color: blue;">[]</span> 内的, 结尾的 <span style="color: blue;"> }, </span> 注意添加1个 <span style="color: blue;">,</span> 号！   </span>
+   </p><p> 下面是参考样本。</p>
+    <pre style="font-size: 13px; margin-left: -60px;">
+        原文本:
+        <span style="color: blue;">北京卫视,http://beijing.com/video.m3u8</span>
+        <span style="color: blue;">上海卫视,http://shanghai01.com/video.m3u8#
+        http://shanghai02.com/video.m3u8</span>
+
+        转换结果:
+        <span style="color: red;">
+        <span style="color: blue;">[</span>
+          {
+            "name": "北京卫视",
+            "groupName": "电视频道",
+            "urls": [
+              "http://beijing.com/video.m3u8"
+            ]
+          },
+          {
+            "name": "上海卫视",
+            "groupName": "电视频道",
+            "urls": [
+              "http://shanghai01.com/video.m3u8",
+              "http://shanghai02.com/video.m3u8"
+            ]
+          }
+        <span style="color: blue;">]</span>
+   </span> </pre>
+</div>
+  <div id="copyright">
+    <p>© 2024 <a href="https://wuzhij.com">wuzhij.com</a> All Rights Reserved.</p>
+  </div>
+    <script>
+        function convertToJson() {
+            const categoryName = document.getElementById('categoryName').value.trim();
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n');
+            const jsonObjects = [];
+            let currentGroupName = '';
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.includes('http')) {
+                    const [name, ...urls] = line.split(',');
+                    const urlList = urls.map(url => url.trim().split('#'));
+                    const flatUrlList = [].concat(...urlList); // Flatten the array of arrays
+                    jsonObjects.push({
+                        name: name.trim(), // 频道名称
+                        groupName: categoryName || "电视频道", // 使用自定义分类名称或默认值
+                        urls: flatUrlList // URL数组
+                    });
+                } else if (line) {
+                    currentGroupName = line;
+                }
+            });
+
+            document.getElementById('result').textContent = JSON.stringify(jsonObjects, null, 2);
+        }
+
+        function clearScreen() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('result').textContent = ''; // 或者使用 innerHTML: document.getElementById('result').innerHTML = '';
+}
+    
+        function copyContent() {
+            const result = document.getElementById('result').textContent;
+            if (!result) return;
+
+            const textArea = document.createElement('textarea');
+            textArea.value = result;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('内容已复制到剪贴板！');
+}
+    
+        function downloadJson() {
+            const result = document.getElementById('result').textContent;
+            if (!result) return;
+
+            const blob = new Blob([result], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'playlist.json';
+            link.click();
+        }
+    </script>
+</body>
+</html>
