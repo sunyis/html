@@ -154,24 +154,30 @@ function convertToJson() {
     const inputText = document.getElementById('inputText').value.trim();
     
     const jsonObjects = [];
-    
+
     if (inputText) {
-        // 拆分输入文本
-        const parts = inputText.split(',').map(item => item.trim());
+        // 拆分输入文本为行
+        const lines = inputText.split('\n').map(line => line.trim());
 
-        const name = parts[0]; // 频道名称
-        const urlPart = parts.slice(1).join(',').split('#'); // 剩余部分拼接,然后根据#分隔
+        lines.forEach(line => {
+            if (line) {
+                // 拆分每一行的频道名称和 URL
+                const parts = line.split(',').map(item => item.trim());
+                const name = parts[0]; // 频道名称
+                const urlPart = parts.slice(1).join(',').split('#'); // 剩余部分拼接后根据#分隔
 
-        let urls = [];
-        urlPart.forEach(part => {
-            urls = urls.concat(part.split(',').map(url => url.trim()).filter(url => url)); // 提取 URL 并去掉多余空格
-        });
+                let urls = [];
+                urlPart.forEach(part => {
+                    urls = urls.concat(part.split(',').map(url => url.trim()).filter(url => url)); // 处理 URL
+                });
 
-        // 创建 JSON 对象
-        jsonObjects.push({
-            name: name,
-            groupName: categoryName,
-            urls: urls
+                // 创建 JSON 对象
+                jsonObjects.push({
+                    name: name,
+                    groupName: categoryName,
+                    urls: urls
+                });
+            }
         });
     }
 
